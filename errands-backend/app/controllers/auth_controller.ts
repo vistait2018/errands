@@ -1,12 +1,14 @@
 import User from '#models/user'
 import { LoginValidator, RegisterValidator } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
+import { errors as authErrors } from '@adonisjs/auth'
 
-export default class StarsController {
-  async register({ request, response }: HttpContext) {
+export default class AuthController {
+  async register({ request, response, logger }: HttpContext) {
     const data = await request.validateUsing(RegisterValidator)
     try {
       const user = await User.create(data)
+      logger.info('Registering user ' + user)
       return response.status(201).json({
         message: 'User Registerd',
         data: user,
@@ -14,6 +16,7 @@ export default class StarsController {
         status: false,
       })
     } catch (error) {
+      logger.error('Error Registering user ' + error)
       return response.status(401).json({
         message: 'Bad Request',
         statusCode: 401,
@@ -61,11 +64,20 @@ export default class StarsController {
     }
   }
 
-  async logout({ auth, response }: HttpContext) {
+  async logout({ auth, response, logger }: HttpContext) {
     try {
       const user = auth.user!
 
+      if (!user) {
+        return response.status(401).json({
+          message: "You can'/t log out since you are not logged in",
+          data: 'Unauthenticated',
+          statusCode: 404,
+          status: false,
+        })
+      }
       await User.accessTokens.delete(user, user.currentAccessToken.identifier)
+      logger.info('Access token deleted ')
       return response.status(200).json({
         message: 'Logout successful',
         data: null,
@@ -73,6 +85,16 @@ export default class StarsController {
         status: true,
       })
     } catch (error) {
+      logger.error(`Error deleting Access token deleted ${error}`)
+      if (error instanceof authErrors.E_UNAUTHORIZED_ACCESS) {
+        return response.status(401).json({
+          message: "You can'/t log out since you are not logged in",
+          data: 'Unauthenticated',
+          statusCode: 404,
+          status: false,
+        })
+      }
+
       return response.status(500).json({
         message: `Error during logout ${error}`,
         statusCode: 500,
@@ -85,9 +107,15 @@ export default class StarsController {
     try {
       // Check if the user is authenticated
       if (await auth.check()) {
+        const user = await User.find(auth.user!.id)
+        await user?.load('profile')
+        await user?.load('bvn')
+        await user?.load('nin')
+        await user?.load('star')
+        await user?.load('rating')
         return response.status(200).json({
           message: 'Your info retrieved successfully',
-          data: auth.user,
+          data: user,
           statusCode: 200,
           status: true,
         })
@@ -108,5 +136,4 @@ export default class StarsController {
       })
     }
   }
-
 }
