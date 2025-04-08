@@ -8,13 +8,10 @@ import {
 } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as authErrors } from '@adonisjs/auth'
-import mail from '@adonisjs/mail/services/main'
 import Otp from '#models/otp'
 import hash from '@adonisjs/core/services/hash'
 import { DateTime } from 'luxon'
-import router from '@adonisjs/core/services/router'
 import sendMail from '../helpers/send_mail.js'
-
 
 export default class AuthController {
   async register({ request, response, logger }: HttpContext) {
@@ -38,7 +35,8 @@ export default class AuthController {
       sendMail(
         'Errands OTP Registration Notifiction and Email Confirmation',
         `Kindly goto your email to confirm your email .Your OTP code is <strong>${otp}</strong>.'
-        +'It will expire in 10 minutes.`
+        +'It will expire in 10 minutes.`,
+        user.email
       )
 
       return response.status(201).json({
@@ -71,17 +69,19 @@ export default class AuthController {
           status: false,
         })
       }
-      // Verify user credentials
-      const user = await User.verifyCredentials(email, password)
-      // Generate authentication token
-      if (user.emailConfirmed === false) {
+
+      if (!userExists.emailConfirmed) {
         return response.status(400).json({
           message: 'You need to confirm your email first',
-          data: 'EMAIL_NOT_CONFIRMED',
+          error: 'EMAIL_NOT_CONFIRMED',
           statusCode: 400,
           status: false,
         })
       }
+      // Verify user credentials
+      const user = await User.verifyCredentials(email, password)
+      // Generate authentication token
+
       const token = await User.accessTokens.create(user, ['*'], {
         expiresIn: '30 days',
       })
@@ -92,7 +92,8 @@ export default class AuthController {
         'Errands Account Login  Notification ',
         `Someone logged in into your account.
       It you are the one please change your password.
-      if it is you do nothing`
+      if it is you do nothing`,
+        user.email
       )
 
       return response.status(200).json({
@@ -202,7 +203,8 @@ export default class AuthController {
       }
       sendMail(
         ' Errands OTP',
-        `Your OTP code is <strong>${otp}</strong>. It will expire in 10 minutes.`
+        `Your OTP code is <strong>${otp}</strong>. It will expire in 10 minutes.`,
+        email
       )
 
       return response.status(200).json({
@@ -277,12 +279,8 @@ export default class AuthController {
       await Otp.query().where('userId', savedUser.id).delete()
 
       // send a mail
-      await mail.sendLater((message) => {
-        message.to(emailRecipient).from('test@alphaclinic.com.ng').subject(' Email COnfirmed ')
-          .html(`<p>Your email has been confirmed.</p>
-            <p><a href="${router.makeUrl('auth.login')}">Click here to login</a></p>
-          `)
-      })
+      sendMail(' Email COnfirmed', `Your email has been confirmed.`, user.email)
+
       return response.status(200).json({
         message: 'Email confirm succesfully',
         data: null,
@@ -350,7 +348,7 @@ export default class AuthController {
       logger.info(`otp saved in db ${otp}`)
 
       // send a mail
-      sendMail('Change Password', `Use this OTP  ${otp} to change Password.`)
+      sendMail('Change Password', `Use this OTP  ${otp} to change Password.`, verifyEmail.email)
 
       return response.status(200).json({
         message: 'Request to change password has been sent successfully',
@@ -368,7 +366,7 @@ export default class AuthController {
     }
   }
 
-  async changePassword({ request, auth, response, logger }: HttpContext) {
+  async changePassword({ request, response, logger }: HttpContext) {
     const { password, newPassword, confirmPassword, otp, email } = await request.validateUsing(
       ChangePasswordConfirmation
     )
@@ -448,7 +446,7 @@ export default class AuthController {
     await Otp.query().where('userId', savedUser.id).delete()
 
     // send a mail
-    sendMail('Password Reset', `Password Reset Successfully.`)
+    sendMail('Password Reset', `Password Reset Successfully.`, user.email)
 
     return response.status(200).json({
       message: 'Password changed successfully',

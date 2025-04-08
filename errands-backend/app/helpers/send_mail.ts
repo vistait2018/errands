@@ -2,14 +2,10 @@ import mail from '@adonisjs/mail/services/main'
 
 const mailRecipient = 'jidedorcas@gmail.com'
 
-const sendMail = async (subject: string, info: string) => {
+const sendMail = async (subject: string, info: string, recipient: string = mailRecipient) => {
   try {
     await mail.sendLater((message) => {
-      message
-        .to(mailRecipient)
-        .from('test@alphaclinic.com.ng')
-        .subject(subject)
-        .html(`<p>${info}</p>`)
+      message.to(recipient).from('test@alphaclinic.com.ng').subject(subject).html(`<p>${info}</p>`)
     })
     console.log('Email sent successfully.')
   } catch (error) {
