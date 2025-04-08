@@ -10,6 +10,7 @@
 const AuthController = () => import('#controllers/auth_controller')
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
+const HealthChecksController = () => import('#controllers/health_checks_controller')
 
 router
   .group(() => {
@@ -23,8 +24,7 @@ router
     router
       .group(() => {
         router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
-
-
+        router.get('/health', [HealthChecksController])
       })
       .use(middleware.auth())
   })
