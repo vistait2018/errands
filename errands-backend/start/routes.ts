@@ -16,10 +16,13 @@ router
     router.post('/register', [AuthController, 'register']).as('auth.register')
     router.post('/login', [AuthController, 'login']).as('auth.login')
     router.get('/me', [AuthController, 'me']).as('auth.me')
-
+    router.post('/email-comfirmation', [AuthController, 'emailConfirmed'])
+    router.post('/email-validation', [AuthController, 'validateYourEmail'])
     router
       .group(() => {
         router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
+
+
       })
       .use(middleware.auth())
   })
