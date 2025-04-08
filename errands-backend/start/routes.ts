@@ -18,6 +18,8 @@ router
     router.get('/me', [AuthController, 'me']).as('auth.me')
     router.post('/email-comfirmation', [AuthController, 'emailConfirmed'])
     router.post('/email-validation', [AuthController, 'validateYourEmail'])
+    router.post('/password-reset-request', [AuthController, 'passwordConfirm'])
+    router.post('/password-reset', [AuthController, 'changePassword'])
     router
       .group(() => {
         router.delete('/logout', [AuthController, 'logout']).as('auth.logout')

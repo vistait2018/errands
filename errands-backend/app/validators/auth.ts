@@ -27,3 +27,18 @@ export const ValidateOTPAndEmail = vine.compile(
     otp: vine.string().regex(/^\d{6}$/),
   })
 )
+
+export const ChangePassword = vine.compile(
+  vine.object({
+    email: vine.string().email(),
+  })
+)
+export const ChangePasswordConfirmation = vine.compile(
+  vine.object({
+    email: vine.string().email(),
+    password: vine.string(), // current password (plaintext from user)
+    newPassword: vine.string().minLength(8),
+    confirmPassword: vine.string().minLength(8),
+    otp: vine.string().regex(/^\d{6}$/),
+  })
+)
