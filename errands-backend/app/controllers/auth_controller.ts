@@ -15,7 +15,7 @@ import { DateTime } from 'luxon'
 import router from '@adonisjs/core/services/router'
 import sendMail from '../helpers/send_mail.js'
 
-const emailRecipient = 'jidedorcas@gmail.com'
+
 export default class AuthController {
   async register({ request, response, logger }: HttpContext) {
     try {
