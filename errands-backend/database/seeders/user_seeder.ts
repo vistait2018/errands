@@ -25,10 +25,12 @@ export default class extends BaseSeeder {
     for (const user of users) {
       await user.related('star').create({
         level: StarEnum.BRASS,
+        raterId: user.id,
       })
 
       await user.related('rating').create({
         rating: RatingEnum.NO_STAR,
+        raterId: user.id,
       })
 
       await user.related('feedback').create({

@@ -12,16 +12,19 @@ export default class Profile extends BaseModel {
   declare userId: number
 
   @column()
-  declare firstName: string | null
+  declare firstName: string
 
   @column()
-  declare lastname: string | null
+  declare lastname: string
 
   @column()
   declare middleName: string | null
 
   @column()
-  declare sex: string | null
+  declare sex: string
+
+  @column()
+  declare dateOfBirth: string
 
   @column()
   declare address: string | null
@@ -30,10 +33,10 @@ export default class Profile extends BaseModel {
   declare addressPath: string | null
 
   @column()
-  declare addressVerified: boolean
+  declare addressVerified: boolean | null
 
   @column()
-  declare phoneNumber: boolean
+  declare phoneNumber: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

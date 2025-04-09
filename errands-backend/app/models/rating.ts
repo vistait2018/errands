@@ -14,6 +14,9 @@ export default class Rating extends BaseModel {
   @column()
   declare rating: RatingEnum | null
 
+  @column()
+  declare raterId: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

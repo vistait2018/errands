@@ -10,7 +10,11 @@
 const AuthController = () => import('#controllers/auth_controller')
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
-import GoogleAuthController from '#controllers/google_auths_controller'
+import UsersController from '#controllers/users_controller'
+import ProfilesController from '#controllers/profiles_controller'
+import RatingsController from '#controllers/ratings_controller'
+const GoogleAuthController = () => import('#controllers/google_auths_controller')
+const BvnAndNinsController = () => import('#controllers/bvn_and_nins_controller')
 const HealthChecksController = () => import('#controllers/health_checks_controller')
 
 router
@@ -24,11 +28,15 @@ router
     router.post('/password-reset', [AuthController, 'changePassword'])
     router.get('/google/redirect', [GoogleAuthController, 'redirect'])
     router.get('/google/callback', [GoogleAuthController, 'callback'])
+    router.post('/verify-bvn', [BvnAndNinsController, 'validateBvn'])
+    router.get('/users', [UsersController, 'all'])
     router
-      .group(() => {
-        router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
-        router.get('/health', [HealthChecksController])
-      })
-      .use(middleware.auth())
+      .post('/rate/:toId/rater/:fromId', [RatingsController, 'update'])
+      .where('toId', router.matchers.number())
+      .where('fromId', router.matchers.number())
+    router.get('/profile', [ProfilesController, 'all'])
+    router.get('/profile/:id', [ProfilesController, 'all']).where('id', router.matchers.number())
+    router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
+    router.get('/health', [HealthChecksController])
   })
   .prefix('api/v1')

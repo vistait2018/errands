@@ -114,6 +114,14 @@ export default class AuthController {
   }
 
   async logout({ auth, response, logger }: HttpContext) {
+    if (!auth.isAuthenticated) {
+      return response.status(403).json({
+        message: 'You are not logged in',
+        error: 'UN_AUTHENITCATED',
+        statusCode: 403,
+        status: false,
+      })
+    }
     try {
       const user = auth.user!
 
@@ -172,10 +180,10 @@ export default class AuthController {
         })
       }
 
-      return response.status(401).json({
+      return response.status(403).json({
         message: 'You are not logged in',
-        error: 'UNAUTHENTICATED',
-        statusCode: 401,
+        error: 'UN_AUTHENITCATED',
+        statusCode: 403,
         status: false,
       })
     } catch (error) {
@@ -218,7 +226,7 @@ export default class AuthController {
     } catch (error) {
       return response.status(500).json({
         message: 'Internal server error',
-        error: error.message,
+        data: error.message,
         statusCode: 500,
         status: false,
       })
@@ -233,7 +241,7 @@ export default class AuthController {
       if (!user || user === null) {
         return response.status(404).json({
           message: 'User not found',
-          error: 'Invalid Email',
+          error: 'Invalide Email',
           statusCode: 404,
           status: false,
         })
@@ -339,7 +347,7 @@ export default class AuthController {
         return response.status(400).json({
           message: 'Bad Request',
           data: 'NO_SUCH_EMAIL',
-          statusCode: 500,
+          statusCode: 400,
           status: false,
         })
       }
@@ -378,7 +386,7 @@ export default class AuthController {
     if (!user) {
       return response.status(400).json({
         message: 'Bad Request',
-        error: 'NO_SUCH_EMAIL',
+        data: 'NO_SUCH_EMAIL',
         statusCode: 500,
         status: false,
       })
@@ -389,7 +397,7 @@ export default class AuthController {
     if (!isValidPassword) {
       return response.status(400).json({
         message: 'Current password is incorrect',
-        error: 'INCORRECT_CURRENT_PASSORD',
+        data: 'INCORRECT_CURRENT_PASSORD',
         statusCode: 400,
         status: false,
       })
@@ -399,7 +407,7 @@ export default class AuthController {
     if (newPassword !== confirmPassword) {
       return response.status(400).json({
         message: 'New password and confirmation do not match',
-        error: 'VALIDATION_ERROR',
+        data: 'NEW PASSWORD AND CONFIRM PASSWORD DO NOT MATCH',
         statusCode: 400,
         status: false,
       })

@@ -18,6 +18,7 @@ export default class extends BaseSchema {
           RatingEnum.FIVE_STAR,
         ])
         .defaultTo(RatingEnum.NO_STAR)
+      table.bigInteger('rater_id').unsigned().references('users.id').nullable()
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
     })

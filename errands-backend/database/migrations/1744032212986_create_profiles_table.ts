@@ -11,6 +11,7 @@ export default class extends BaseSchema {
       table.string('last_name').notNullable()
       table.string('middle_name').nullable()
       table.string('sex').notNullable()
+      table.string('date_of_birth').notNullable()
       table.string('address').notNullable()
       table.string('address_path').nullable()
       table.boolean('address_verified').defaultTo(false)

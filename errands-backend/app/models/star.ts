@@ -15,6 +15,9 @@ export default class Star extends BaseModel {
   @column()
   declare level: StarEnum | null
 
+  @column()
+  declare raterId: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
