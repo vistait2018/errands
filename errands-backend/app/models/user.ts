@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, hasOne } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, computed, hasMany, hasOne } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import * as relations from '@adonisjs/lucid/types/relations'
@@ -13,6 +13,7 @@ import Nin from './nin.js'
 import Star from './star.js'
 import LoginEnum from '../enums/login_enum.js'
 import Profile from './profile.js'
+import { BelongsToQueryClient } from '@adonisjs/lucid/orm/relations'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -47,10 +48,13 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ autoUpdate: true })
   declare updatedAt: DateTime | null
 
+  @column()
+  declare agregatedRating: number | null
+
   static accessTokens = DbAccessTokensProvider.forModel(User)
 
-  @hasOne(() => Role)
-  public role!: relations.HasOne<typeof Role>
+  @belongsTo(() => Role)
+  public role!: relations.BelongsTo<typeof Role>
 
   @hasOne(() => Bvn)
   public bvn!: relations.HasOne<typeof Bvn>
@@ -58,14 +62,14 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @hasOne(() => Nin)
   public nin!: relations.HasOne<typeof Nin>
 
-  @hasOne(() => Rating)
-  public rating!: relations.HasOne<typeof Rating>
+  @hasMany(() => Rating)
+  public ratings!: relations.HasMany<typeof Rating>
 
-  @hasOne(() => Feedback)
-  public feedback!: relations.HasOne<typeof Feedback>
+  @hasMany(() => Feedback)
+  public feedbacks!: relations.HasMany<typeof Feedback>
 
-  @hasOne(() => Star)
-  public star!: relations.HasOne<typeof Star>
+  @hasMany(() => Star)
+  public stars!: relations.HasMany<typeof Star>
 
   @hasOne(() => Profile)
   public profile!: relations.HasOne<typeof Profile>

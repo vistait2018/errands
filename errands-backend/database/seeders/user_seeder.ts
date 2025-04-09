@@ -23,14 +23,15 @@ export default class extends BaseSeeder {
     const users = await UserFactory.createMany(100)
 
     for (const user of users) {
+      const randomNumber = Math.floor(Math.random() * (98 - 2 + 1)) + 2
       await user.related('star').create({
         level: StarEnum.BRASS,
-        raterId: user.id,
+        raterId: user.id !== randomNumber ? randomNumber : randomNumber - 1,
       })
 
       await user.related('rating').create({
         rating: RatingEnum.NO_STAR,
-        raterId: user.id,
+        raterId: user.id !== randomNumber ? randomNumber : randomNumber - 1,
       })
 
       await user.related('feedback').create({

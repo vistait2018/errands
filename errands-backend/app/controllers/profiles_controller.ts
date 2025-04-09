@@ -9,7 +9,7 @@ export default class ProfilesController {
       const page = request.input('page', 1)
       const limit = 10
       const search = request.qs
-      if (!auth.isAuthenticated) {
+      if (!(await auth.check())) {
         return response.status(403).json({
           message: 'You are not logged in',
           error: 'UN_AUTHENITCATED',

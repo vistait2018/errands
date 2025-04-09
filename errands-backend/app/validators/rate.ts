@@ -1,5 +1,4 @@
-import  vine from '@vinejs/vine'
-import RatingEnum from '../enums/rating_enums.js'
+import vine from '@vinejs/vine'
 
 const RatingValidator = vine.compile(
   vine.object({

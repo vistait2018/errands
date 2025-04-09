@@ -34,8 +34,11 @@ router
       .post('/rate/:toId/rater/:fromId', [RatingsController, 'update'])
       .where('toId', router.matchers.number())
       .where('fromId', router.matchers.number())
-    router.get('/profile', [ProfilesController, 'all'])
-    router.get('/profile/:id', [ProfilesController, 'all']).where('id', router.matchers.number())
+    router.get('rating-aggregate/:id', [RatingsController, 'getRatingAgregate'])
+    router.get('/profiles', [ProfilesController, 'all'])
+    router
+      .get('/profile/:userId', [ProfilesController, 'all'])
+      .where('id', router.matchers.number())
     router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
     router.get('/health', [HealthChecksController])
   })

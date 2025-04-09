@@ -12,6 +12,7 @@ import Otp from '#models/otp'
 import hash from '@adonisjs/core/services/hash'
 import { DateTime } from 'luxon'
 import sendMail from '../helpers/send_mail.js'
+import Rating from '#models/rating'
 
 export default class AuthController {
   async register({ request, response, logger }: HttpContext) {
@@ -170,8 +171,14 @@ export default class AuthController {
         await user?.load('profile')
         await user?.load('bvn')
         await user?.load('nin')
-        await user?.load('star')
-        await user?.load('rating')
+        await user?.load('stars')
+        await user?.load('ratings')
+        await user?.load('feedbacks')
+        const totalRating = await Rating.query().where('userId', user!.id).exec()
+        const total = totalRating.reduce((sum, rating) => +sum + +rating.rating!, 0)
+        const noOfRatings = totalRating.length
+        const calculatedRating = Math.floor((total / (noOfRatings * 5)) * 5)
+        user!.agregatedRating = calculatedRating
         return response.status(200).json({
           message: 'Your info retrieved successfully',
           data: user,

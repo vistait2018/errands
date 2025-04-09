@@ -6,8 +6,9 @@ export default class UsersController {
     try {
       const page = request.input('page', 1)
       const limit = 10
-      const search = request.qs
-      if (!auth.isAuthenticated) {
+      const mySearch = request.qs().search
+
+      if (!(await auth.check())) {
         return response.status(403).json({
           message: 'You are not logged in',
           error: 'UN_AUTHENITCATED',
@@ -17,34 +18,38 @@ export default class UsersController {
       }
 
       const user = auth.user
-      if (user?.roleId === RoleEnums.USER) {
+
+      if (user?.roleId !== RoleEnums.ADMIN) {
         return response.status(401).json({
-          message: 'You are not logged in',
+          message: 'You are not authorised',
           error: 'UN_AUTHORISED',
           statusCode: 401,
           status: false,
         })
       }
+
       const usersQuery = User.query()
         .preload('role')
-        .preload('rating')
-        .preload('feedback')
+        .preload('ratings')
+        .preload('feedbacks')
         .preload('nin')
-        .preload('star')
+        .preload('stars')
         .preload('bvn')
+        .preload('profile')
 
-      if (search) {
+      if (mySearch) {
         usersQuery
-          .whereILike('email', `%${search}%`)
+          .whereILike('email', `%${mySearch}%`)
           .orWhereHas('profile', (profileQuery) => {
             profileQuery
-              .whereILike('lastName', `%${search}%`)
-              .orWhereILike('firstName', `%${search}%`)
+              .whereILike('lastName', `%${mySearch}%`)
+              .orWhereILike('firstName', `%${mySearch}%`)
           })
           .limit(10)
       }
 
       const users = await usersQuery.paginate(page, limit)
+
       return response.status(200).json({
         message: 'All Users',
         error: users,

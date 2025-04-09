@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasOne } from '@adonisjs/lucid/orm'
 import * as relations from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import RoleEnums from '../enums/role_enums.js'
@@ -17,6 +17,6 @@ export default class Role extends BaseModel {
   @column.dateTime({ autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => User)
-  public user!: relations.BelongsTo<typeof User>
+  @hasOne(() => User)
+  public user!: relations.HasOne<typeof User>
 }
