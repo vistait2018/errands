@@ -1,6 +1,6 @@
 import mail from '@adonisjs/mail/services/main'
 
-const mailRecipient = 'jidedorcas@gmail.com'
+
 
 const sendMail = async (subject: string, info: string, recipient: string = mailRecipient) => {
   try {

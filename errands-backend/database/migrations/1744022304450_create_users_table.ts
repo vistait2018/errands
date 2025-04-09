@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       table.string('email', 254).notNullable().unique()
       table.string('password').notNullable()
       table.enum('login_type', [LoginEnum.API, LoginEnum.GOOGLE]).defaultTo(LoginEnum.API)
-      table.string('oauthId').nullable()
+      table.string('oauth_id').nullable().unique()
       table.boolean('email_confirmed').defaultTo(false)
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()

@@ -40,15 +40,16 @@ export default class AuthController {
       )
 
       return response.status(201).json({
-        message: 'User Registerd',
+        message: 'User Registered',
         data: user,
         statusCode: 201,
         status: false,
       })
     } catch (error) {
       logger.error('Error Registering user ' + error)
-      return response.status(401).json({
-        message: 'Bad Request',
+      return response.status(500).json({
+        message: 'An error occured',
+        error: 'Internal Server Error',
         statusCode: 401,
         status: false,
       })
@@ -64,7 +65,7 @@ export default class AuthController {
       if (!userExists) {
         return response.status(401).json({
           message: 'Invalid email or password',
-          data: null,
+          error: 'EMAIL_DOES_NOT_EXIST',
           statusCode: 401,
           status: false,
         })
@@ -98,7 +99,7 @@ export default class AuthController {
 
       return response.status(200).json({
         message: 'Login successful',
-        token: token,
+        data: token,
         statusCode: 200,
         status: true,
       })
@@ -138,7 +139,7 @@ export default class AuthController {
       if (error instanceof authErrors.E_UNAUTHORIZED_ACCESS) {
         return response.status(401).json({
           message: "You can'/t log out since you are not logged in",
-          data: 'Unauthenticated',
+          error: 'Unauthenticated',
           statusCode: 404,
           status: false,
         })
@@ -146,6 +147,7 @@ export default class AuthController {
 
       return response.status(500).json({
         message: `Error during logout ${error}`,
+        error: 'Internal Server Error',
         statusCode: 500,
         status: false,
       })
@@ -172,7 +174,7 @@ export default class AuthController {
 
       return response.status(401).json({
         message: 'You are not logged in',
-        data: null,
+        error: 'UNAUTHENTICATED',
         statusCode: 401,
         status: false,
       })
@@ -216,7 +218,7 @@ export default class AuthController {
     } catch (error) {
       return response.status(500).json({
         message: 'Internal server error',
-        data: error.message,
+        error: error.message,
         statusCode: 500,
         status: false,
       })
@@ -231,7 +233,7 @@ export default class AuthController {
       if (!user || user === null) {
         return response.status(404).json({
           message: 'User not found',
-          error: 'Invalide Email',
+          error: 'Invalid Email',
           statusCode: 404,
           status: false,
         })
@@ -376,7 +378,7 @@ export default class AuthController {
     if (!user) {
       return response.status(400).json({
         message: 'Bad Request',
-        data: 'NO_SUCH_EMAIL',
+        error: 'NO_SUCH_EMAIL',
         statusCode: 500,
         status: false,
       })
@@ -387,7 +389,7 @@ export default class AuthController {
     if (!isValidPassword) {
       return response.status(400).json({
         message: 'Current password is incorrect',
-        data: 'INCORRECT_CURRENT_PASSORD',
+        error: 'INCORRECT_CURRENT_PASSORD',
         statusCode: 400,
         status: false,
       })
@@ -397,7 +399,7 @@ export default class AuthController {
     if (newPassword !== confirmPassword) {
       return response.status(400).json({
         message: 'New password and confirmation do not match',
-        data: 'NEW PASSWORD AND CONFIRM PASSWORD DO NOT MATCH',
+        error: 'VALIDATION_ERROR',
         statusCode: 400,
         status: false,
       })
