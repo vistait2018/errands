@@ -1,6 +1,6 @@
 enum BankAccountType {
-  SAVING = 1,
-  CURRENT = 2,
-  DEFAULT = 3,
+  SAVING = 'saving',
+  CURRENT = 'current',
+  DEFAULT = 'default',
 }
 export default BankAccountType

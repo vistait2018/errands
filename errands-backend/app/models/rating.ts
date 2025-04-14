@@ -2,7 +2,6 @@ import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import User from './user.js'
 import * as relations from '@adonisjs/lucid/types/relations'
-import RatingEnum from '../enums/rating_enums.js'
 
 export default class Rating extends BaseModel {
   @column({ isPrimary: true })
@@ -12,10 +11,13 @@ export default class Rating extends BaseModel {
   declare userId: number
 
   @column()
-  declare rating: RatingEnum | null
+  declare rating: number
 
   @column()
   declare raterId: number
+
+  @column()
+  declare errandId: number
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

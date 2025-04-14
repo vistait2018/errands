@@ -13,7 +13,7 @@ import Nin from './nin.js'
 import Star from './star.js'
 import LoginEnum from '../enums/login_enum.js'
 import Profile from './profile.js'
-import { BelongsToQueryClient } from '@adonisjs/lucid/orm/relations'
+import Errand from './errand.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -34,6 +34,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare oauthId: string | null
 
   @column()
+  declare imagePath: string | null
+
+  @column()
   declare email: string
 
   @column({ serializeAs: null })
@@ -42,14 +45,20 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare emailConfirmed: boolean
 
+  @column()
+  declare lastLogin: DateTime | null
+
+  @column()
+  declare loggedIn: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
-  @column.dateTime({ autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 
   @column()
-  declare agregatedRating: number | null
+  declare agregatedRating: number | string | null
 
   static accessTokens = DbAccessTokensProvider.forModel(User)
 
@@ -65,11 +74,16 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @hasMany(() => Rating)
   public ratings!: relations.HasMany<typeof Rating>
 
+  @hasMany(() => Errand, {
+    foreignKey: 'customerId',
+  })
+  public errands!: relations.HasMany<typeof Errand>
+
   @hasMany(() => Feedback)
   public feedbacks!: relations.HasMany<typeof Feedback>
 
-  @hasMany(() => Star)
-  public stars!: relations.HasMany<typeof Star>
+  @hasOne(() => Star)
+  public star!: relations.HasOne<typeof Star>
 
   @hasOne(() => Profile)
   public profile!: relations.HasOne<typeof Profile>

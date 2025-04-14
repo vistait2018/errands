@@ -2,9 +2,11 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import RoleEnums from '../../app/enums/role_enums.js'
 import Role from '#models/role'
 import { UserFactory } from '#database/factories/user_factory'
-import StarEnum from '../../app/enums/star_enums.js'
+
 import RatingEnum from '../../app/enums/rating_enums.js'
 import User from '#models/user'
+
+import { ErrandFactory } from '#database/factories/errands_factory'
 
 export default class extends BaseSeeder {
   async run() {
@@ -20,31 +22,32 @@ export default class extends BaseSeeder {
       emailConfirmed: true,
       roleId: RoleEnums.ADMIN,
     })
-    const users = await UserFactory.createMany(100)
+    await UserFactory.createMany(100)
+    await ErrandFactory.createMany(30)
+    //await RunnerFactory
+    const user = await User.find(5)
 
-    for (const user of users) {
-      const randomNumber = Math.floor(Math.random() * (98 - 2 + 1)) + 2
-      await user.related('star').create({
-        level: StarEnum.BRASS,
-        raterId: user.id !== randomNumber ? randomNumber : randomNumber - 1,
-      })
-
-      await user.related('rating').create({
+    if (user) {
+      await user.related('ratings').create({
+        errandId: 5,
         rating: RatingEnum.NO_STAR,
-        raterId: user.id !== randomNumber ? randomNumber : randomNumber - 1,
+        raterId: 67,
       })
 
-      await user.related('feedback').create({
+      await user.related('feedbacks').create({
+        errandId: 5,
         comments: 'Awesome errand boy',
         recepientId: 3,
       })
 
-      await user.related('feedback').create({
+      await user.related('feedbacks').create({
+        errandId: 6,
         comments: 'Nice errand boy :)',
         recepientId: 40,
       })
 
-      await user.related('feedback').create({
+      await user.related('feedbacks').create({
+        errandId: 7,
         comments: 'Unsatistfactory job ',
         recepientId: 50,
       })

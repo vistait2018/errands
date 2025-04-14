@@ -1,4 +1,4 @@
-import LoginEnum from "../../enums/login_enum.js"
+import LoginEnum from '../../enums/login_enum.js'
 
 export default class UserResponse {
   id: number

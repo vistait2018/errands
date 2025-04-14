@@ -30,10 +30,11 @@ export default class UsersController {
 
       const usersQuery = User.query()
         .preload('role')
+        .preload('errands')
         .preload('ratings')
         .preload('feedbacks')
         .preload('nin')
-        .preload('stars')
+        .preload('star')
         .preload('bvn')
         .preload('profile')
 
@@ -42,8 +43,8 @@ export default class UsersController {
           .whereILike('email', `%${mySearch}%`)
           .orWhereHas('profile', (profileQuery) => {
             profileQuery
-              .whereILike('lastName', `%${mySearch}%`)
-              .orWhereILike('firstName', `%${mySearch}%`)
+              .whereILike('last_name', `%${mySearch}%`)
+              .orWhereILike('first_name', `%${mySearch}%`)
           })
           .limit(10)
       }
@@ -52,14 +53,14 @@ export default class UsersController {
 
       return response.status(200).json({
         message: 'All Users',
-        error: users,
+        data: users,
         statusCode: 200,
         status: true,
       })
     } catch (error) {
       return response.status(403).json({
         message: 'You Internal Server Error',
-        error: error.error,
+        error: error.message,
         statusCode: 403,
         status: false,
       })

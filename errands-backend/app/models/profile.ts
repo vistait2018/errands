@@ -9,13 +9,13 @@ export default class Profile extends BaseModel {
   declare id: number
 
   @column()
-  declare userId: number
+  declare userId: number | null
 
   @column()
   declare firstName: string
 
   @column()
-  declare lastname: string
+  declare lastName: string
 
   @column()
   declare middleName: string | null
@@ -30,7 +30,7 @@ export default class Profile extends BaseModel {
   declare address: string | null
 
   @column()
-  declare addressPath: string | null
+  declare addressPath: string 
 
   @column()
   declare addressVerified: boolean | null

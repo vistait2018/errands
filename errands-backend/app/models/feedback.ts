@@ -16,6 +16,9 @@ export default class Feedback extends BaseModel {
   @column()
   declare comments: string
 
+  @column()
+  declare errandId: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

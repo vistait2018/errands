@@ -8,6 +8,7 @@ export default class extends BaseSchema {
       table.increments('id')
       table.bigInteger('user_id').unsigned().references('users.id').nullable()
       table.bigInteger('recepient_id').unsigned().references('users.id').nullable()
+      table.bigInteger('errand_id').unsigned().references('errands.id').notNullable()
       table.text('comments').notNullable()
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()

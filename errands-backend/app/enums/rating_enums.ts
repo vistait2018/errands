@@ -1,10 +1,10 @@
 enum RatingEnum {
-  NO_STAR = 1,
-  ONE_STAR = 2,
-  TWO_STAR = 3,
-  THREE_STAR = 4,
-  FOUR_STAR = 5,
-  FIVE_STAR = 6,
+  NO_STAR = 0,
+  ONE_STAR = 1,
+  TWO_STAR = 2,
+  THREE_STAR = 3,
+  FOUR_STAR = 4,
+  FIVE_STAR = 5,
 }
 
 export default RatingEnum

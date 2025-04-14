@@ -13,6 +13,11 @@ import hash from '@adonisjs/core/services/hash'
 import { DateTime } from 'luxon'
 import sendMail from '../helpers/send_mail.js'
 import Rating from '#models/rating'
+import { UpdateAvatarValidator } from '#validators/update_profile'
+import app from '@adonisjs/core/services/app'
+import { cuid } from '@adonisjs/core/helpers'
+import drive from '@adonisjs/drive/services/main'
+import RatingEnum from '../enums/rating_enums.js'
 
 export default class AuthController {
   async register({ request, response, logger }: HttpContext) {
@@ -47,6 +52,14 @@ export default class AuthController {
         status: false,
       })
     } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
       logger.error('Error Registering user ' + error)
       return response.status(500).json({
         message: 'An error occured',
@@ -88,6 +101,11 @@ export default class AuthController {
         expiresIn: '30 days',
       })
 
+      if (user) {
+        user.lastLogin = DateTime.now()
+        user.loggedIn = true
+      }
+      await user.save()
       logger.info(`Token generated: ${token}`)
       // send a mail
       sendMail(
@@ -105,7 +123,14 @@ export default class AuthController {
         status: true,
       })
     } catch (error) {
-      logger.error(error.message)
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
       return response.status(401).json({
         message: 'Bad Request',
         statusCode: 401,
@@ -115,18 +140,8 @@ export default class AuthController {
   }
 
   async logout({ auth, response, logger }: HttpContext) {
-    if (!auth.isAuthenticated) {
-      return response.status(403).json({
-        message: 'You are not logged in',
-        error: 'UN_AUTHENITCATED',
-        statusCode: 403,
-        status: false,
-      })
-    }
     try {
-      const user = auth.user!
-
-      if (!user) {
+      if (!(await auth.check())) {
         return response.status(401).json({
           message: "You can'/t log out since you are not logged in",
           data: 'Unauthenticated',
@@ -134,9 +149,14 @@ export default class AuthController {
           status: false,
         })
       }
+      const user = auth.user!
+
+      user!.loggedIn = false
+
       await User.accessTokens.delete(user, user.currentAccessToken.identifier)
       logger.info('Access token deleted ')
-
+      user!.loggedIn = false
+      await user.save()
       return response.status(200).json({
         message: 'Logout successful',
         data: null,
@@ -166,32 +186,35 @@ export default class AuthController {
   async me({ auth, response }: HttpContext) {
     try {
       // Check if the user is authenticated
-      if (await auth.check()) {
-        const user = await User.find(auth.user!.id)
-        await user?.load('profile')
-        await user?.load('bvn')
-        await user?.load('nin')
-        await user?.load('stars')
-        await user?.load('ratings')
-        await user?.load('feedbacks')
-        const totalRating = await Rating.query().where('userId', user!.id).exec()
-        const total = totalRating.reduce((sum, rating) => +sum + +rating.rating!, 0)
-        const noOfRatings = totalRating.length
-        const calculatedRating = Math.floor((total / (noOfRatings * 5)) * 5)
-        user!.agregatedRating = calculatedRating
-        return response.status(200).json({
-          message: 'Your info retrieved successfully',
-          data: user,
-          statusCode: 200,
-          status: true,
+      if (!(await auth.check())) {
+        return response.status(403).json({
+          message: 'You are not logged in',
+          error: 'UN_AUTHENITCATED',
+          statusCode: 403,
+          status: false,
         })
       }
+      const user = await User.find(auth.user!.id)
+      await user?.load('profile')
+      await user?.load('bvn')
+      await user?.load('nin')
+      await user?.load('star')
+      await user?.load('errands')
+      await user?.load('ratings')
+      await user?.load('feedbacks')
 
-      return response.status(403).json({
-        message: 'You are not logged in',
-        error: 'UN_AUTHENITCATED',
-        statusCode: 403,
-        status: false,
+      const totalRating = await Rating.query().where('userId', user!.id).exec()
+      const total = totalRating.reduce((sum, rating) => +sum + +rating.rating!, 0)
+      const noOfRatings = totalRating.length
+      const calculatedRating = Math.floor((total / (noOfRatings * 5)) * 5)
+      if (user) {
+        user.agregatedRating = RatingEnum[calculatedRating]
+      }
+      return response.status(200).json({
+        message: 'Your info retrieved successfully',
+        data: user,
+        statusCode: 200,
+        status: true,
       })
     } catch (error) {
       return response.status(500).json({
@@ -206,7 +229,7 @@ export default class AuthController {
   async emailConfirmed({ response, request }: HttpContext) {
     try {
       const otp = await this.newOTP()
-      const email = request.input('email')
+      const { email } = await request.validateUsing(ChangePassword)
 
       const saved = await this.saveOtpDatabase(email, otp)
 
@@ -231,6 +254,14 @@ export default class AuthController {
         status: true,
       })
     } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
       return response.status(500).json({
         message: 'Internal server error',
         data: error.message,
@@ -305,6 +336,14 @@ export default class AuthController {
         status: true,
       })
     } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
       return response.status(500).json({
         message: 'Internal server error',
         error: error.message,
@@ -374,6 +413,14 @@ export default class AuthController {
         status: true,
       })
     } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
       return response.status(500).json({
         message: 'Internal server error',
         data: error.message,
@@ -384,92 +431,184 @@ export default class AuthController {
   }
 
   async changePassword({ request, response, logger }: HttpContext) {
-    const { password, newPassword, confirmPassword, otp, email } = await request.validateUsing(
-      ChangePasswordConfirmation
-    )
+    try {
+      const { password, newPassword, confirmPassword, otp, email } = await request.validateUsing(
+        ChangePasswordConfirmation
+      )
 
-    const user = await User.query().where('email', email).first()
-    logger.info('checking if user email exists')
-    if (!user) {
-      return response.status(400).json({
-        message: 'Bad Request',
-        data: 'NO_SUCH_EMAIL',
+      const user = await User.query().where('email', email).first()
+      logger.info('checking if user email exists')
+      if (!user) {
+        return response.status(400).json({
+          message: 'Bad Request',
+          data: 'NO_SUCH_EMAIL',
+          statusCode: 500,
+          status: false,
+        })
+      }
+
+      // Verify current password
+      const isValidPassword = await hash.verify(user.password, password)
+      if (!isValidPassword) {
+        return response.status(400).json({
+          message: 'Current password is incorrect',
+          data: 'INCORRECT_CURRENT_PASSORD',
+          statusCode: 400,
+          status: false,
+        })
+      }
+
+      // Confirm new password matches confirmation
+      if (newPassword !== confirmPassword) {
+        return response.status(400).json({
+          message: 'New password and confirmation do not match',
+          data: 'NEW PASSWORD AND CONFIRM PASSWORD DO NOT MATCH',
+          statusCode: 400,
+          status: false,
+        })
+      }
+
+      // If OTP is involved, add verification logic here
+
+      const otpRecord = await Otp.query()
+        .where('userId', user.id)
+        .andWhere('invalidate', false)
+        .orderBy('created_at', 'desc')
+        .first()
+
+      if (!otpRecord) {
+        return response.status(404).json({
+          message: 'otp not found',
+          error: 'OTP_NOT_FOUND',
+          statusCode: 404,
+          status: false,
+        })
+      }
+
+      if (DateTime.utc() > otpRecord.expiresAt) {
+        await otpRecord.delete()
+        return response.status(400).json({
+          message: 'Bad Request',
+          error: 'OTP_EXPIRED',
+          statusCode: 400,
+          status: false,
+        })
+      }
+      const isValidOtp = await hash.verify(otpRecord.otp, otp.toString())
+      if (!isValidOtp) {
+        return response.status(400).json({
+          message: 'Bad Request',
+          error: 'INVALID_OTPD',
+          statusCode: 400,
+          status: false,
+        })
+      }
+      // Update password
+      user.password = newPassword
+      const savedUser = await user.save()
+      // Invalidate or delete OTP
+
+      await Otp.query().where('userId', savedUser.id).delete()
+
+      // send a mail
+      sendMail('Password Reset', `Password Reset Successfully.`, user.email)
+
+      return response.status(200).json({
+        message: 'Password changed successfully',
+        data: null,
+        statusCode: 200,
+        status: true,
+      })
+    } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
+      return response.status(500).json({
+        message: 'Internal server error',
+        data: error.message,
         statusCode: 500,
         status: false,
       })
     }
+  }
 
-    // Verify current password
-    const isValidPassword = await hash.verify(user.password, password)
-    if (!isValidPassword) {
-      return response.status(400).json({
-        message: 'Current password is incorrect',
-        data: 'INCORRECT_CURRENT_PASSORD',
-        statusCode: 400,
+  async uploadUserImage({ request, response, auth }: HttpContext) {
+    try {
+      const disk = drive.use()
+      if (!(await auth.check())) {
+        return response.status(403).json({
+          message: 'You are not logged in',
+          error: 'UN_AUTHENTICATED',
+          statusCode: 403,
+          status: false,
+        })
+      }
+
+      const { avatar } = await request.validateUsing(UpdateAvatarValidator)
+
+      // Enforce file size manually (if not handled by validator)
+      if (avatar.size > 2 * 1024 * 1024) {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: 'Image too large (max 2MB)',
+          statusCode: 422,
+          status: false,
+        })
+      }
+
+      const user = await User.find(auth.user!.id)
+      if (!user) {
+        return response.notFound({ message: 'User not found' })
+      }
+
+      // Delete existing image if it exists
+      if (user.imagePath) {
+        const oldImagePath = `${user.imagePath}`
+        console.log(`path ${oldImagePath}`)
+        const exists = await disk.exists(oldImagePath)
+        if (!exists) {
+          console.log(`image ${oldImagePath} does not exist`)
+        }
+        await disk.delete(oldImagePath)
+      }
+
+      // Save new image
+      const fileName = `${cuid()}.${avatar.extname}`
+      await avatar.move(app.makePath('storage/uploads'), {
+        name: fileName,
+        overwrite: true,
+      })
+
+      user.imagePath = fileName
+      await user.save()
+
+      return response.status(200).json({
+        message: 'Image uploaded successfully',
+        data: fileName,
+        statusCode: 200,
+        status: true,
+      })
+    } catch (error) {
+      if (error.message === 'request entity too large') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: 'Image Too Large',
+          statusCode: 422,
+          status: false,
+        })
+      }
+
+      return response.status(500).json({
+        message: 'Internal server error',
+        data: error.message,
+        statusCode: 500,
         status: false,
       })
     }
-
-    // Confirm new password matches confirmation
-    if (newPassword !== confirmPassword) {
-      return response.status(400).json({
-        message: 'New password and confirmation do not match',
-        data: 'NEW PASSWORD AND CONFIRM PASSWORD DO NOT MATCH',
-        statusCode: 400,
-        status: false,
-      })
-    }
-
-    // If OTP is involved, add verification logic here
-
-    const otpRecord = await Otp.query()
-      .where('userId', user.id)
-      .andWhere('invalidate', false)
-      .orderBy('created_at', 'desc')
-      .first()
-
-    if (!otpRecord) {
-      return response.status(404).json({
-        message: 'otp not found',
-        error: 'OTP_NOT_FOUND',
-        statusCode: 404,
-        status: false,
-      })
-    }
-
-    if (DateTime.utc() > otpRecord.expiresAt) {
-      await otpRecord.delete()
-      return response.status(400).json({
-        message: 'Bad Request',
-        error: 'OTP_EXPIRED',
-        statusCode: 400,
-        status: false,
-      })
-    }
-    const isValidOtp = await hash.verify(otpRecord.otp, otp.toString())
-    if (!isValidOtp) {
-      return response.status(400).json({
-        message: 'Bad Request',
-        error: 'INVALID_OTPD',
-        statusCode: 400,
-        status: false,
-      })
-    }
-    // Update password
-    user.password = newPassword
-    const savedUser = await user.save()
-    // Invalidate or delete OTP
-
-    await Otp.query().where('userId', savedUser.id).delete()
-
-    // send a mail
-    sendMail('Password Reset', `Password Reset Successfully.`, user.email)
-
-    return response.status(200).json({
-      message: 'Password changed successfully',
-      data: null,
-      statusCode: 200,
-      status: true,
-    })
   }
 }

@@ -1,4 +1,4 @@
-import type { HttpContext } from '@adonisjs/core/http'
+import { type HttpContext } from '@adonisjs/core/http'
 import RoleEnums from '../enums/role_enums.js'
 import Profile from '#models/profile'
 import { UpdateProfileValidator } from '#validators/update_profile'
@@ -8,7 +8,7 @@ export default class ProfilesController {
     try {
       const page = request.input('page', 1)
       const limit = 10
-      const search = request.qs
+      const search = request.qs().search
       if (!(await auth.check())) {
         return response.status(403).json({
           message: 'You are not logged in',
@@ -18,7 +18,7 @@ export default class ProfilesController {
         })
       }
 
-      const user = await auth.user
+      const user = auth.user
       if (user?.roleId !== RoleEnums.ADMIN) {
         return response.status(401).json({
           message: 'You are not authorised',
@@ -27,12 +27,12 @@ export default class ProfilesController {
           status: false,
         })
       }
-      const profilesQuery = Profile.query().preload('bankInfo').preload('user')
+      const profilesQuery = Profile.query().preload('bankInfo')
 
       if (search) {
         profilesQuery
-          .whereILike('lastName', `%${search}%`)
-          .orWhereILike('firstName', `%${search}%`)
+          .where('last_name', 'like', `%${search}%`)
+          .orWhere('first_name', 'like', `%${search}%`)
           .limit(10)
       }
 
@@ -44,10 +44,54 @@ export default class ProfilesController {
         status: true,
       })
     } catch (error) {
-      return response.status(403).json({
+      return response.status(500).json({
         message: 'You Internal Server Error',
-        error: error.error,
-        statusCode: 403,
+        error: error.message,
+        statusCode: 500,
+        status: false,
+      })
+    }
+  }
+  async store({ request, response, auth }: HttpContext) {
+    try {
+      const data = await request.validateUsing(UpdateProfileValidator)
+
+      if (!(await auth.check())) {
+        return response.status(403).json({
+          message: 'You are not logged in',
+          error: 'UN_AUTHENITCATED',
+          statusCode: 403,
+          status: false,
+        })
+      }
+      const user = await auth.user
+      data.userId = user!.id
+
+      const profile = await Profile.create(data)
+
+      // Load related user and bankInfo
+      await profile.load('user')
+      await profile.load('bankInfo')
+
+      return response.status(201).json({
+        message: 'Profile created successfully',
+        data: profile,
+        statusCode: 201,
+        status: true,
+      })
+    } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages, // 👈 Full list of field-specific messages
+          statusCode: 422,
+          status: false,
+        })
+      }
+      return response.status(500).json({
+        message: 'Internal Server Error',
+        error: error.message,
+        statusCode: 500,
         status: false,
       })
     }
@@ -55,8 +99,7 @@ export default class ProfilesController {
   async update({ request, response, auth, params }: HttpContext) {
     try {
       // Check if the user is authenticated
-      const user = auth.user
-      if (!user) {
+      if (!(await auth.check())) {
         return response.status(403).json({
           message: 'You are not logged in',
           error: 'UN_AUTHENTICATED',
@@ -65,8 +108,16 @@ export default class ProfilesController {
         })
       }
 
-      // Ensure the logged-in user is the one attempting to update the profile
-      if (params.id !== user.profile.userId) {
+      const user = auth.user
+
+      // Get profile by ID from route param
+      const profile = await Profile.findOrFail(params.id)
+
+      await profile.load('user')
+      await profile.load('bankInfo')
+
+      // Optional: Check if the authenticated user owns the profile
+      if (profile.userId !== user!.id) {
         return response.status(401).json({
           message: 'You are not authorized to update this profile',
           error: 'UN_AUTHORIZED',
@@ -75,16 +126,11 @@ export default class ProfilesController {
         })
       }
 
-      // Fetch the user's profile
-      const profile = await Profile.query().where('userId', user.id).firstOrFail()
-
-      // Validate the request using the UpdateProfileValidator
+      // Validate the request data
       const validatedData = await request.validateUsing(UpdateProfileValidator)
 
-      // Merge validated data with the profile
+      // Merge and save
       profile.merge(validatedData)
-
-      // Save the updated profile
       await profile.save()
 
       return response.status(200).json({
@@ -94,6 +140,15 @@ export default class ProfilesController {
         status: true,
       })
     } catch (error) {
+      if (error.code === 'E_VALIDATION_ERROR') {
+        return response.status(422).json({
+          message: 'Validation failed',
+          errors: error.messages,
+          statusCode: 422,
+          status: false,
+        })
+      }
+
       return response.status(500).json({
         message: 'Failed to update profile',
         error: error.message,

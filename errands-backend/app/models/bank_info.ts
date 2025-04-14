@@ -18,7 +18,7 @@ export default class BankInfo extends BaseModel {
   declare bankAccountNo: string
 
   @column()
-  declare bankAccountType: BankAccountType
+  declare bankAccountType: string | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

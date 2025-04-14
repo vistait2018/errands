@@ -8,17 +8,9 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.bigIncrements('id')
       table.bigInteger('user_id').unsigned().references('users.id').nullable()
-      table
-        .enum('rating', [
-          RatingEnum.NO_STAR,
-          RatingEnum.ONE_STAR,
-          RatingEnum.TWO_STAR,
-          RatingEnum.THREE_STAR,
-          RatingEnum.FOUR_STAR,
-          RatingEnum.FIVE_STAR,
-        ])
-        .defaultTo(RatingEnum.NO_STAR)
+      table.integer('rating').defaultTo(RatingEnum.NO_STAR)
       table.bigInteger('rater_id').unsigned().references('users.id').nullable()
+      table.bigInteger('errand_id').unsigned().references('errands.id').notNullable()
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
     })
