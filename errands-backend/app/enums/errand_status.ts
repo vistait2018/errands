@@ -1,7 +1,7 @@
 enum ErrandStatus {
-  PENDING = 1,
-  ASSIGNED = 2,
-  IN_PROGRESS = 3,
-  COMPLETED = 4,
+  PENDING = 'pending',
+  ASSIGNED = 'assigned',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
 }
 export default ErrandStatus

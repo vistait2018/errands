@@ -8,6 +8,7 @@
 */
 
 const AuthController = () => import('#controllers/auth_controller')
+const CustomersController = () => import('#controllers/customers_controller')
 import router from '@adonisjs/core/services/router'
 
 const UsersController = () => import('#controllers/users_controller')
@@ -31,15 +32,24 @@ router
     router.post('/verify-bvn', [BvnAndNinsController, 'validateBvn'])
     router.post('/upload-avatar', [AuthController, 'uploadUserImage'])
     router.get('/users', [UsersController, 'all'])
+    router.post('/create-errand', [CustomersController, 'createErrand'])
+    router
+      .put('/update-errand/:errandId', [CustomersController, 'updateErrand'])
+      .where('errandId', router.matchers.number())
+    router
+      .patch('/update-errand/image-upload/:errandId', [CustomersController, 'uploadImages'])
+      .where('errandId', router.matchers.number())
     router
       .post('/rate/:toId', [RatingsController, 'update'])
       .where('toId', router.matchers.number())
-    router.get('/rating-aggregate/:userId', [RatingsController, 'getRatingAgregate'])
+    router
+      .get('/rating-aggregate/:userId', [RatingsController, 'getRatingAgregate'])
+      .where('userId', router.matchers.number())
     router.get('/profiles', [ProfilesController, 'all'])
     router.post('/profiles', [ProfilesController, 'store'])
     router
       .put('/profiles/:id', [ProfilesController, 'update'])
-      .where('userId', router.matchers.number())
+      .where('id', router.matchers.number())
     router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
     router.get('/health', [HealthChecksController])
   })

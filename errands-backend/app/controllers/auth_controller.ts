@@ -95,17 +95,20 @@ export default class AuthController {
       }
       // Verify user credentials
       const user = await User.verifyCredentials(email, password)
-      // Generate authentication token
+      logger.info(`verifying credentials ${user.email}`)
 
       const token = await User.accessTokens.create(user, ['*'], {
         expiresIn: '30 days',
       })
+      logger.info(`token ${token}`)
 
-      if (user) {
-        user.lastLogin = DateTime.now()
-        user.loggedIn = true
+      logger.info(`user  ${userExists}`)
+
+      if (userExists) {
+        userExists.lastLogin = DateTime.now().toISO()
+        userExists.loggedIn = true
       }
-      await user.save()
+      await userExists.save()
       logger.info(`Token generated: ${token}`)
       // send a mail
       sendMail(
@@ -131,9 +134,9 @@ export default class AuthController {
           status: false,
         })
       }
-      return response.status(401).json({
-        message: 'Bad Request',
-        statusCode: 401,
+      return response.status(500).json({
+        message: 'Internal Server Error',
+        statusCode: 400,
         status: false,
       })
     }
@@ -563,7 +566,7 @@ export default class AuthController {
 
       const user = await User.find(auth.user!.id)
       if (!user) {
-        return response.notFound({ message: 'User not found' })
+        return response.notFound({ message: 'User not found', status: false, statusCode: 404 })
       }
 
       // Delete existing image if it exists

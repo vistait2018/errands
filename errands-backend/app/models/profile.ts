@@ -30,7 +30,7 @@ export default class Profile extends BaseModel {
   declare address: string | null
 
   @column()
-  declare addressPath: string 
+  declare addressPath: string
 
   @column()
   declare addressVerified: boolean | null

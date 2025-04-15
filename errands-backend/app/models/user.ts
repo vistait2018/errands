@@ -46,7 +46,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare emailConfirmed: boolean
 
   @column()
-  declare lastLogin: DateTime | null
+  declare lastLogin: DateTime | null | string
 
   @column()
   declare loggedIn: boolean

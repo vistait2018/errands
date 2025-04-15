@@ -3,6 +3,8 @@ import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import User from './user.js'
 import * as relations from '@adonisjs/lucid/types/relations'
 import Runner from './runner.js'
+import ErrandStatus from '../enums/errand_status.js'
+
 
 export default class Errand extends BaseModel {
   @column({ isPrimary: true })
@@ -12,7 +14,7 @@ export default class Errand extends BaseModel {
   declare customerId: number
 
   @column()
-  declare runnerId: number
+  declare runnerId: number | null
 
   @column()
   declare errandType: string
@@ -39,29 +41,32 @@ export default class Errand extends BaseModel {
   declare dropoffLocationLatitude: number
 
   @column()
-  declare assignedDate: string
+  declare assignedDate: string | DateTime | Date
 
   @column()
-  declare requestDate: string
+  declare requestDate: string | DateTime | Date
 
   @column()
-  declare completedDate: string
+  declare completedDate: string | DateTime | Date
 
   @column()
-  declare images: string
+  declare images: string | null
 
   @column()
   declare estimatedCost: number
 
   @column()
-  declare status: string
+  declare status: string | ErrandStatus
+
+  @column()
+  declare radiusKm: number
 
   @column()
   declare paymentStatus: string
   @column()
   declare contactPersonName: string
   @column()
-  declare contactPersonPhone_no: string
+  declare contactPersonPhoneNo: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
