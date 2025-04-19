@@ -2,26 +2,23 @@ import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import User from './user.js'
 import * as relations from '@adonisjs/lucid/types/relations'
-import StarEnum from '../enums/star_enums.js'
 
-
-export default class Star extends BaseModel {
+export default class Notification extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
   @column()
-  declare userId: number
-
+  declare senderId: number
   @column()
-  declare level: StarEnum | null
-
+  declare recipientId: number
   @column()
-  declare raterId: number
-
+  declare message: string
+  @column()
+  declare status: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
-  @column.dateTime({ autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
   @belongsTo(() => User)

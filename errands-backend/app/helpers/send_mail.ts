@@ -1,8 +1,6 @@
 import mail from '@adonisjs/mail/services/main'
 
-
-
-const sendMail = async (subject: string, info: string, recipient: string = mailRecipient) => {
+const sendMail = async (subject: string, info: string, recipient: string) => {
   try {
     await mail.sendLater((message) => {
       message.to(recipient).from('test@alphaclinic.com.ng').subject(subject).html(`<p>${info}</p>`)

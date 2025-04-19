@@ -70,7 +70,7 @@ export const UpdateErrand = vine.compile(
 
     assignedDate: vine.date().afterOrEqual(DateTime.now().toISODate()),
     requestDate: vine.date().equals(DateTime.now().toISODate()),
-    completedDate: vine.date().afterOrEqual(DateTime.now().toISODate()),
+    //completedDate: vine.date().afterOrEqual(DateTime.now().toISODate()),
     estimatedCost: vine.number().positive(),
 
     contactPersonName: vine.string().optional(),

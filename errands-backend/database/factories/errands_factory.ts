@@ -31,7 +31,6 @@ export const ErrandFactory = factory
       contact_person_name: faker.person.fullName(),
       contact_person_phone_no: faker.phone.number(),
       assigned_date: DateTime.now().toISO(),
-      completed_date: DateTime.now().toISO(),
       estimated_cost: Math.floor(getRandomAmount()),
       payment_status: faker.helpers.arrayElement([PAYMENTSTATUS.PENDING, PAYMENTSTATUS.COMPLETED]),
     }

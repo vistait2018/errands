@@ -9,6 +9,8 @@
 
 const AuthController = () => import('#controllers/auth_controller')
 const CustomersController = () => import('#controllers/customers_controller')
+import NotificationController from '#services/notification_service'
+import RunnersController from '#controllers/runners_controller'
 import router from '@adonisjs/core/services/router'
 
 const UsersController = () => import('#controllers/users_controller')
@@ -37,6 +39,47 @@ router
       .put('/update-errand/:errandId', [CustomersController, 'updateErrand'])
       .where('errandId', router.matchers.number())
     router
+      .post('/run-errand/:errandId', [RunnersController, 'runErrand'])
+      .where('errandId', router.matchers.number())
+    router
+      .post('/run-errand-from-dropoff-location/:errandId', [
+        RunnersController,
+        'runErrandKmsFromDropOff',
+      ])
+      .where('errandId', router.matchers.number())
+    router.post('/run-errand-from-pickup-location/:errandId', [
+      RunnersController,
+      'runErrandKmsFromPickUp',
+    ])
+    router
+      .post('/accept-runner/errand/:errandId/runner/:runnerId', [
+        CustomersController,
+        'acceptRunner',
+      ])
+      .where('errandId', router.matchers.number())
+      .where('runnerId', router.matchers.number())
+    router
+      .post('/get-nearby-errands/:runnerId', [RunnersController, 'getNearbyErrands'])
+      .where('runnerId', router.matchers.number())
+    router
+      .post('/get-nearby-errands-from-pickup/:runnerId', [
+        RunnersController,
+        'runErrandKmsFromPickUp',
+      ])
+      .where('runnerId', router.matchers.number())
+    router
+      .post('/get-nearby-errands-from-dropoff/:runnerId', [
+        RunnersController,
+        'runErrandKmsFromDropOff',
+      ])
+      .where('runnerId', router.matchers.number())
+    router
+      .put('/admin/stop-errand/:errandId', [CustomersController, 'stopErrandAdmin'])
+      .where('errandId', router.matchers.number())
+    router
+      .put('/stop-errand/:errandId', [CustomersController, 'stopErrandUser'])
+      .where('errandId', router.matchers.number())
+    router
       .patch('/update-errand/image-upload/:errandId', [CustomersController, 'uploadImages'])
       .where('errandId', router.matchers.number())
     router
@@ -50,6 +93,7 @@ router
     router
       .put('/profiles/:id', [ProfilesController, 'update'])
       .where('id', router.matchers.number())
+
     router.delete('/logout', [AuthController, 'logout']).as('auth.logout')
     router.get('/health', [HealthChecksController])
   })

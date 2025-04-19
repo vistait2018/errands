@@ -1,0 +1,44 @@
+<div style="margin:0; padding:0; background-color:#f4f4f7; font-family: Arial, sans-serif;">
+  <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05); display:flex; flex-direction:column;">
+
+    <!-- Logo Section -->
+    <div style="padding:20px; text-align:center; background-color:#ffffff;">
+      <img src="{{ logoUrl }}" alt="Company Logo" width="120" style="max-width:100%; height:auto;">
+    </div>
+
+    <!-- Header Banner -->
+    <div style="background-color:#4F46E5; padding:20px; color:#ffffff; text-align:center; font-size:24px;">
+      <strong>Errands - {{ type }} Notification</strong>
+    </div>
+
+    <!-- Email Body -->
+    <div style="padding:30px; color:#333333; display:flex; flex-direction:column;">
+      <h2 style="margin:0 0 20px 0; font-size:22px;">Hello {{ _name }},</h2>
+
+      <p style="font-size:16px; line-height:1.6; margin:0 0 20px 0;">
+        We're reaching out to you regarding your recent activity on our platform.
+      </p>
+
+      <p style="font-size:16px; line-height:1.6; margin:0 0 30px 0;">
+        {{ info }}
+      </p>
+
+      {{--  <div style="text-align:center;">
+        <a href="{{ actionUrl }}" style="background-color:#4F46E5; color:#ffffff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold; display:inline-block;">
+          {{ actionText }}
+        </a>
+      </div>  --}}
+
+      <p style="font-size:14px; color:#999999; margin-top:30px;">
+        If you didn't request this, you can safely ignore this email.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color:#f0f0f5; padding:20px; text-align:center; font-size:12px; color:#888888;">
+      &copy; 2025 Your Company, All rights reserved.<br>
+      123 Street, City, Country
+    </div>
+
+  </div>
+</div>

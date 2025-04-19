@@ -13,15 +13,15 @@ export default class Runner extends BaseModel {
   @column()
   declare availableDate: string
   @column()
-  declare available_time_start: string
+  declare availableTimeStart: string
   @column()
-  declare available_time_end: string
+  declare availableTimeEnd: string
   @column()
-  declare location_longitude: number
+  declare locationLongitude: number
   @column()
-  declare location_latitude: number
+  declare locationLatitude: number
   @column()
-  declare radius_km: number
+  declare radiusKm: number
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

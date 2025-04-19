@@ -60,6 +60,7 @@
     "@adonisjs/mail": "^9.2.2",
     "@vinejs/vine": "^3.0.0",
     "axios": "^1.8.4",
+    "edge.js": "^6.2.1",
     "luxon": "^3.6.1",
     "mysql2": "^3.14.0",
     "node-fetch": "^3.3.2",

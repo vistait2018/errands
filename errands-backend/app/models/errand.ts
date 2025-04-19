@@ -41,19 +41,22 @@ export default class Errand extends BaseModel {
   declare dropoffLocationLatitude: number
 
   @column()
-  declare assignedDate: string | DateTime | Date
+  declare assignedDate: string | DateTime
 
   @column()
-  declare requestDate: string | DateTime | Date
+  declare requestDate: string | DateTime
 
   @column()
-  declare completedDate: string | DateTime | Date
+  declare completedDate: string | DateTime
 
   @column()
   declare images: string | null
 
   @column()
   declare estimatedCost: number
+
+  @column()
+  declare isCanceled: boolean
 
   @column()
   declare status: string | ErrandStatus
@@ -78,5 +81,5 @@ export default class Errand extends BaseModel {
   public customer!: relations.BelongsTo<typeof User>
 
   @belongsTo(() => Runner)
-  public ruuner!: relations.BelongsTo<typeof Runner>
+  public runner!: relations.BelongsTo<typeof Runner>
 }

@@ -14,6 +14,7 @@ import Star from './star.js'
 import LoginEnum from '../enums/login_enum.js'
 import Profile from './profile.js'
 import Errand from './errand.js'
+import Nofification from './notification.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -75,7 +76,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   public ratings!: relations.HasMany<typeof Rating>
 
   @hasMany(() => Errand, {
-    foreignKey: 'customerId',
+    foreignKey: 'runnerId',
   })
   public errands!: relations.HasMany<typeof Errand>
 
@@ -87,4 +88,15 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasOne(() => Profile)
   public profile!: relations.HasOne<typeof Profile>
+
+  @hasMany(() => Nofification, {
+    foreignKey: 'senderId',
+  })
+  public sender!: relations.HasMany<typeof Nofification>
+
+  @hasMany(() => Nofification, {
+    foreignKey: 'recipientId',
+  })
+  public recipient!: relations.HasMany<typeof Nofification>
+
 }

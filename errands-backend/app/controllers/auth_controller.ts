@@ -18,8 +18,12 @@ import app from '@adonisjs/core/services/app'
 import { cuid } from '@adonisjs/core/helpers'
 import drive from '@adonisjs/drive/services/main'
 import RatingEnum from '../enums/rating_enums.js'
+import EmailService from '#services/email_service'
+import { inject } from '@adonisjs/core'
 
+@inject()
 export default class AuthController {
+  constructor(protected emailService: EmailService) {}
   async register({ request, response, logger }: HttpContext) {
     try {
       const data = await request.validateUsing(RegisterValidator)
@@ -70,6 +74,7 @@ export default class AuthController {
     }
   }
   async login({ request, response, logger }: HttpContext) {
+    console.log(app.makePath('public/images/logo.png'))
     try {
       logger.info('Validating credentials')
       const { email, password } = await request.validateUsing(LoginValidator)
@@ -111,11 +116,22 @@ export default class AuthController {
       await userExists.save()
       logger.info(`Token generated: ${token}`)
       // send a mail
+      const info = `Errands Account Login  Notification '
+       Someone logged in into your account.
+       It you are the one please change your password.
+       if it is you do nothing`
+      await user.load('profile')
+      this.emailService.sendWelcomeEmail(
+        'Errands Login Notification',
+        user!.profile.firstName,
+        info,
+        user.email
+      )
       sendMail(
         'Errands Account Login  Notification ',
         `Someone logged in into your account.
-      It you are the one please change your password.
-      if it is you do nothing`,
+       It you are the one please change your password.
+       if it is you do nothing`,
         user.email
       )
 
@@ -136,7 +152,7 @@ export default class AuthController {
       }
       return response.status(500).json({
         message: 'Internal Server Error',
-        statusCode: 400,
+        statusCode: 500,
         status: false,
       })
     }
