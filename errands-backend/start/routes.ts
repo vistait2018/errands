@@ -9,8 +9,7 @@
 
 const AuthController = () => import('#controllers/auth_controller')
 const CustomersController = () => import('#controllers/customers_controller')
-import NotificationController from '#services/notification_service'
-import RunnersController from '#controllers/runners_controller'
+const RunnersController = () => import('#controllers/runners_controller')
 import router from '@adonisjs/core/services/router'
 
 const UsersController = () => import('#controllers/users_controller')
