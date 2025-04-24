@@ -1,6 +1,5 @@
 import Notification from '#models/notification'
 
-
 export default class NotificationService {
   public async listUserNotifications(userId: number, page = 1, limit = 10) {
     return await Notification.query()
@@ -9,8 +8,24 @@ export default class NotificationService {
       .paginate(page, limit)
   }
 
-  public async createNotification(data: any) {
-    return await Notification.create(data)
+  public async createNotification({
+    senderId,
+    recipientId,
+    message,
+    type,
+  }: {
+    senderId: number
+    recipientId: number
+    message: string
+    type: string
+  }) {
+    return await Notification.create({
+      senderId,
+      recipientId,
+      message,
+      type,
+      status: 'delivered', // or 'read'
+    })
   }
 
   public async getNotificationById(id: number) {

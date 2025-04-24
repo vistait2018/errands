@@ -9,6 +9,7 @@ export default class extends BaseSchema {
       table.bigInteger('recipient_id').unsigned().references('users.id').notNullable()
       table.bigInteger('sender_id').unsigned().references('users.id').notNullable()
       table.text('message')
+      table.string('type')
       table.enum('status', ['pending', 'delivered', 'read']).defaultTo('pending')
       table.timestamp('created_at')
       table.timestamp('updated_at')

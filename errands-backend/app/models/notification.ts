@@ -14,6 +14,8 @@ export default class Notification extends BaseModel {
   @column()
   declare message: string
   @column()
+  declare type: string
+  @column()
   declare status: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
